@@ -2,36 +2,40 @@ import java.util.Scanner;
 
 public class Main {
     static final int numberOfMonthlyReports = 3;
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         MonthlyReport monthlyReport = new MonthlyReport();
         YearlyReport yearlyReport2021 = new YearlyReport();
         Checker checker = new Checker();
+
         String[] months = {"Январь", "Февраль", "Март"};
 
         while (true) {
             printMenu();
-            int command = scanner.nextInt();
+            Commands command = Commands.values()[scanner.nextInt()];
             switch (command) {
-                case 1:
+                case READ_MONTHS:
                     for (int month = 1; month <= numberOfMonthlyReports; month++) {
                         monthlyReport.addMonthlyReport(months[month - 1], "m.20210" + month + ".csv");
                     }
+                    if (!monthlyReport.monthsToTransactions.isEmpty())
+                        System.out.println("Месячные отчеты успешно считаны.");
                     break;
-                case 2:
-                    yearlyReport2021.addYearlyReport(2021, "y.2021.csv");
+                case READ_YEAR:
+                    yearlyReport2021.addYearlyReport(months, 2021, "y.2021.csv");
+                    if (!yearlyReport2021.monthSummaries.isEmpty())
+                        System.out.println("Годовой отчет успешно считан.");
                     break;
-                case 3:
+                case CHECK_REPORTS:
                     checker.check(monthlyReport, yearlyReport2021);
                     break;
-                case 4:
+                case MONTH_STATISTIC:
                     monthlyReport.printStatistic();
                     break;
-                case 5:
+                case YEAR_STATISTIC:
                     yearlyReport2021.printStatistic();
                     break;
-                case 0:
+                case END:
                     System.out.println("Работа завершена.");
                     return;
                 default:
@@ -42,12 +46,17 @@ public class Main {
     }
 
     static void printMenu() {
-        System.out.println("1.Считать все месячные отчеты\n" +
-                "2.Считать годовой отчет\n" +
-                "3.Сверить отчёты\n" +
-                "4.Вывести информацию обо всех месячных отчётах\n" +
-                "5.Вывести информацию о годовом отчёте\n" +
+        System.out.println("1.Считать все месячные отчеты" + System.lineSeparator() +
+                "2.Считать годовой отчет" + System.lineSeparator() +
+                "3.Сверить отчёты" + System.lineSeparator() +
+                "4.Вывести информацию обо всех месячных отчётах" + System.lineSeparator() +
+                "5.Вывести информацию о годовом отчёте" + System.lineSeparator() +
                 "0.Завершить работу");
+    }
+
+    enum Commands {
+        END, READ_MONTHS, READ_YEAR, CHECK_REPORTS,
+        MONTH_STATISTIC, YEAR_STATISTIC;
     }
 }
 

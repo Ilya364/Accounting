@@ -1,11 +1,10 @@
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 
 public class MonthlyReport {
     FileReader fileReader = new FileReader();
-    LinkedHashMap<String, ArrayList<Transaction>> monthsToTransactions = new LinkedHashMap<>(); /* Не знаю, можно ли было использовать LinkedHashMap.
-                                                                                                  Просто метод .keySet() для обычной мапы возвращал ключи не в порядке добавления объектов,
-                                                                                                  что приводило к неправильному выводу и ошибке при сверке отчетов, хотя её не должно быть. */
+    HashMap<String, ArrayList<Transaction>> monthsToTransactions = new HashMap<>();
+    ArrayList<String> months = new ArrayList<>();
 
     void addMonthlyReport(String monthName, String fileName) {
         ArrayList<String> lines = fileReader.readFileContents(fileName);
@@ -21,14 +20,16 @@ public class MonthlyReport {
             transactions.add(new Transaction(name, is_expense, quantity, unitPrice));
         }
         monthsToTransactions.put(monthName, transactions);
+        months.add(monthName);
     }
 
     void printStatistic() {
         if (!monthsToTransactions.isEmpty()) {
             System.out.println(String.format("%-8s| %s | %s |", "Месяц", "Максимальный доход", "Максимальная трата"));
             System.out.println("--------------------------------------------------");
-            for (String monthName : monthsToTransactions.keySet()) {
-                System.out.println(String.format("%-8s|%13d%8s%13d%8s", monthName, maxIncome(monthName), "|", maxExpense(monthName), "|"));
+            boolean isExpense = true;
+            for (String monthName : months) {
+                System.out.println(String.format("%-8s|%13d%8s%13d%8s", monthName, maxIncomeOrExpense(monthName, !isExpense), "|", maxIncomeOrExpense(monthName, isExpense), "|"));
                 System.out.println("--------------------------------------------------");
             }
         } else {
@@ -36,24 +37,18 @@ public class MonthlyReport {
         }
     }
 
-    int maxIncome(String monthName) {
-        int maxIncome = 0;
+    int maxIncomeOrExpense(String monthName, boolean isExpense) {
+        int max = 0;
+        int currentAmount = 0;
         for (Transaction transaction : monthsToTransactions.get(monthName)) {
-            if (!(transaction.is_expense) && ((transaction.unitPrice * transaction.quantity) > maxIncome)) {
-                maxIncome = transaction.unitPrice * transaction.quantity;
+            currentAmount = transaction.unitPrice * transaction.quantity;
+            if ((!isExpense) && !(transaction.is_expense) && (currentAmount > max)) {
+                max = transaction.unitPrice * transaction.quantity;
+            } else if ((isExpense) && (transaction.is_expense) && (currentAmount > max)) {
+                max = transaction.unitPrice * transaction.quantity;
             }
         }
-        return maxIncome;
-    }
-
-    int maxExpense(String monthName) {
-        int maxExpense = 0;
-        for (Transaction transaction : monthsToTransactions.get(monthName)) {
-            if ((transaction.is_expense) && ((transaction.unitPrice * transaction.quantity) > maxExpense)) {
-                maxExpense = transaction.unitPrice * transaction.quantity;
-            }
-        }
-        return maxExpense;
+        return max;
     }
 }
 

@@ -4,9 +4,10 @@ import java.util.HashMap;
 public class YearlyReport {
     int year = 0;
     FileReader fileReader = new FileReader();
-    ArrayList<MonthSummary> monthSummaries = new ArrayList<>();
+    final ArrayList<MonthSummary> monthSummaries = new ArrayList<>();
+    ArrayList<String> months = new ArrayList<>();
 
-    void addYearlyReport(int year, String fileName) {
+    void addYearlyReport(String[] months, int year, String fileName) {
         this.year = year;
         ArrayList<String> lines = fileReader.readFileContents(fileName);
         for (int i = 1; i < lines.size(); i++) {
@@ -18,6 +19,8 @@ public class YearlyReport {
 
             monthSummaries.add(new MonthSummary(month, amount, isExpense));
         }
+        for (String month : months)
+            this.months.add(month);
     }
 
     void printStatistic() {
@@ -31,8 +34,9 @@ public class YearlyReport {
 
             for (Integer month : monthsProfits.keySet())
                 lines.add(String.format(" | 0" + month + ": %-14d |", monthsProfits.get(month)));
+            boolean isExpense = true;
 
-            lines.set(0, lines.get(0).concat(String.format("%19.1f %10s %18.1f %9s", averageExpense(), "|", averageIncome(), "|")));
+            lines.set(0, lines.get(0).concat(String.format("%19.1f %10s %18.1f %9s", averageIncomeOrExpense(isExpense), "|", averageIncomeOrExpense(!isExpense), "|")));
             lines.set(1, "    ".concat(lines.get(1)).concat("                             |                            |"));
             lines.set(2, "    ".concat(lines.get(2)).concat("                             |                            |"));
 
@@ -45,30 +49,20 @@ public class YearlyReport {
         }
     }
 
-    double averageIncome() {
+    double averageIncomeOrExpense(boolean isExpense) {
         int sum = 0;
         int months = 0;
         for (MonthSummary monthSummary : monthSummaries) {
-            if (!monthSummary.is_expense) {
+            if (!isExpense && !monthSummary.is_expense) {
+                sum += monthSummary.amount;
+                months++;
+            } else if (isExpense && monthSummary.is_expense) {
                 sum += monthSummary.amount;
                 months++;
             }
         }
         double averageIncome = (double) sum / months;
         return averageIncome;
-    }
-
-    double averageExpense() {
-        int sum = 0;
-        int months = 0;
-        for (MonthSummary monthSummary : monthSummaries) {
-            if (monthSummary.is_expense) {
-                sum += monthSummary.amount;
-                months++;
-            }
-        }
-        double averageExpense = (double) sum / months;
-        return averageExpense;
     }
 
     HashMap<Integer, Integer> getProfits() {

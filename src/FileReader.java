@@ -4,11 +4,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class FileReader {
+    static final String path = "resources/";
 
     ArrayList<String> readFileContents(String fileName) {
-        String path = "resources/" + fileName;
         try {
-            return new ArrayList<>(Files.readAllLines(Path.of(path)));
+            return new ArrayList<>(Files.readAllLines(Path.of(path + fileName)));
         } catch (IOException e) {
             System.out.println("Невозможно прочитать файл с отчётом. Возможно, файл отсутствует в нужной директории.");
             return new ArrayList<>();
